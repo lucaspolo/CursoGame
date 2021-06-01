@@ -22,7 +22,7 @@ public class Game extends JPanel {
         super.paintComponent(g);
         setBackground(Color.LIGHT_GRAY);
         g.setColor(Color.RED);
-        g.fillOval(bola.posX, bola.posY, bola.raio * 2, bola.raio * 2);
+        g.drawImage(bola.obterImagem(), bola.posX, bola.posY, null);
     }
 
     public void gameLoop() {
@@ -45,10 +45,20 @@ public class Game extends JPanel {
     public void update() {
         bola.posX += bola.velX;
         bola.posY += bola.velY;
-        System.out.println(bola.posX);
+        testeColisoes();
     }
 
     public void render() {
         repaint();
+    }
+
+    public void testeColisoes() {
+        if(bola.posX + bola.raio * 2 >= Principal.LARGURA_TELA || bola.posX <= 0) {
+            bola.velX *= -1;
+        }
+
+        if(bola.posY + bola.raio * 2 >= Principal.ALTURA_TELA || bola.posY <= 0) {
+            bola.velY *= -1;
+        }
     }
 }
