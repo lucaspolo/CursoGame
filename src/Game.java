@@ -4,6 +4,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class Game extends JPanel {
+    private final Inimigo inimigo;
     private Bola bola;
     private boolean kCima = false;
     private boolean kBaixo = false;
@@ -38,6 +39,7 @@ public class Game extends JPanel {
         });
 
         bola = new Bola();
+        inimigo = new Inimigo();
         setFocusable(true);
         setLayout(null);
 
@@ -55,6 +57,7 @@ public class Game extends JPanel {
         setBackground(Color.LIGHT_GRAY);
         g.setColor(Color.RED);
         g.drawImage(bola.obterImagem(), bola.posX, bola.posY, null);
+        g.drawImage(inimigo.img, inimigo.posX, inimigo.posY, null);
     }
 
     public void gameLoop() {
@@ -97,6 +100,17 @@ public class Game extends JPanel {
         }
 
         if(bola.posY + bola.raio * 2 >= Principal.ALTURA_TELA || bola.posY <= 0) {
+            bola.posY -= bola.velY;
+        }
+
+        // Colisão com inimigo
+        var catetoH = bola.getCentroX() - inimigo.getCentroX();
+        var catetoV = bola.getCentroY() - inimigo.getCentroY();
+
+        var hipotenusa = Math.sqrt(Math.pow(catetoH, 2) + Math.pow(catetoV, 2));
+
+        if(hipotenusa <= bola.raio + inimigo.raio) {
+            bola.posX -= bola.velX;
             bola.posY -= bola.velY;
         }
     }

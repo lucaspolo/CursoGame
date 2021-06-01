@@ -68,4 +68,12 @@ public class Bola {
 
         return image;
     }
+
+    public int getCentroX() {
+        return posX + raio;
+    }
+
+    public int getCentroY() {
+        return posY + raio;
+    }
 }
