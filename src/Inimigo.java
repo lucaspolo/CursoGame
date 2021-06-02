@@ -1,8 +1,10 @@
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Objects;
 
 public class Inimigo {
+    public BufferedImage sprite;
     public BufferedImage img;
     public int posX;
     public int posY;
@@ -10,7 +12,8 @@ public class Inimigo {
 
     public Inimigo() {
         try {
-            img = ImageIO.read(getClass().getResource("imgs/inimigo.gif"));
+            sprite = ImageIO.read(Objects.requireNonNull(getClass().getResource("imgs/sprite.png")));
+            img = Recursos.getInstance().cortarImagem(400, 100, 500, 200, sprite);
         } catch (IOException e) {
             e.printStackTrace();
         }

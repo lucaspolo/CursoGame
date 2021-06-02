@@ -1,8 +1,10 @@
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Objects;
 
 public class Bola {
+    public BufferedImage sprite;
     public BufferedImage parada;
     public BufferedImage baixo;
     public BufferedImage cima;
@@ -20,15 +22,16 @@ public class Bola {
 
     public Bola() {
         try {
-            parada = ImageIO.read(getClass().getResource("imgs/parada.gif"));
-            baixo = ImageIO.read(getClass().getResource("imgs/baixo.gif"));
-            cima = ImageIO.read(getClass().getResource("imgs/cima.gif"));
-            esquerda = ImageIO.read(getClass().getResource("imgs/esquerda.gif"));
-            direita = ImageIO.read(getClass().getResource("imgs/direita.gif"));
-            direita_baixo = ImageIO.read(getClass().getResource("imgs/direita_baixo.gif"));
-            direita_cima = ImageIO.read(getClass().getResource("imgs/direita_cima.gif"));
-            esquerda_baixo = ImageIO.read(getClass().getResource("imgs/esquerda_baixo.gif"));
-            esquerda_cima = ImageIO.read(getClass().getResource("imgs/esquerda_cima.gif"));
+            sprite = ImageIO.read(Objects.requireNonNull(getClass().getResource("imgs/sprite.png")));
+            cima = Recursos.getInstance().cortarImagem(100, 0,200, 100, sprite);
+            baixo = Recursos.getInstance().cortarImagem(0, 100,100, 200, sprite);
+            esquerda = Recursos.getInstance().cortarImagem(200, 100,300, 200, sprite);
+            direita = Recursos.getInstance().cortarImagem(300, 0,400, 100, sprite);
+            parada = Recursos.getInstance().cortarImagem(300, 100,400, 200, sprite);
+            esquerda_baixo = Recursos.getInstance().cortarImagem(100, 100,200, 200, sprite);
+            esquerda_cima = Recursos.getInstance().cortarImagem(0, 0,100, 100, sprite);
+            direita_baixo = Recursos.getInstance().cortarImagem(400, 0,500, 100, sprite);
+            direita_cima = Recursos.getInstance().cortarImagem(200, 0,300, 100, sprite);
         } catch (IOException e) {
             e.printStackTrace();
         }
