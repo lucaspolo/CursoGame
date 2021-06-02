@@ -6,9 +6,9 @@ import java.util.Objects;
 public class Inimigo {
     public BufferedImage sprite;
     public BufferedImage img;
-    public int posX;
-    public int posY;
-    public int raio;
+    public double posX;
+    public double posY;
+    public double raio;
 
     public Inimigo() {
         try {
@@ -23,11 +23,11 @@ public class Inimigo {
         posY = Principal.ALTURA_TELA / 2 - raio;
     }
 
-    public int getCentroX() {
+    public double getCentroX() {
         return posX + raio;
     }
 
-    public int getCentroY() {
+    public double getCentroY() {
         return posY + raio;
     }
 }

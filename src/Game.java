@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.AffineTransform;
 
 public class Game extends JPanel {
     private final Inimigo inimigo;
@@ -10,6 +11,12 @@ public class Game extends JPanel {
     private boolean kBaixo = false;
     private boolean kDireita = false;
     private boolean kEsquerda = false;
+
+    private long tempoAtual;
+    private long tempoAnterior;
+    private double deltaTime;
+
+    private double FPS_limit = 60;
 
     public Game() {
         addKeyListener(new KeyListener() {
@@ -53,21 +60,37 @@ public class Game extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(
+            RenderingHints.KEY_INTERPOLATION,
+            RenderingHints.VALUE_INTERPOLATION_BICUBIC
+        );
+        super.paintComponent(g2d);
+        var af1 = new AffineTransform();
+        var af2 = new AffineTransform();
+        af1.translate(bola.posX, bola.posY);
+        af2.translate(inimigo.posX, inimigo.posY);
         setBackground(Color.LIGHT_GRAY);
-        g.setColor(Color.RED);
-        g.drawImage(bola.obterImagem(), bola.posX, bola.posY, null);
-        g.drawImage(inimigo.img, inimigo.posX, inimigo.posY, null);
+        g2d.setColor(Color.RED);
+        g2d.drawImage(bola.obterImagem(), af1, null);
+        g2d.drawImage(inimigo.img, af2, null);
     }
 
     public void gameLoop() {
+        tempoAnterior = System.nanoTime();
+        double tempoMinimo = (1e9) / FPS_limit;
         while(true) {
+            tempoAtual = System.nanoTime();
+            deltaTime = (tempoAtual - tempoAnterior) * (6e-8);
             handlerEvents();
             update();
             render();
 
+            tempoAnterior = tempoAtual;
+
+            var tempoEspera = (int) ((tempoMinimo - deltaTime) * (1e-6));
             try {
-                Thread.sleep(17);
+                Thread.sleep(tempoEspera);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -85,22 +108,22 @@ public class Game extends JPanel {
     }
 
     public void update() {
-        bola.posX += bola.velX;
-        bola.posY += bola.velY;
-        testeColisoes();
+        bola.posX += (bola.velX * deltaTime);
+        bola.posY += (bola.velY * deltaTime);
+        testeColisoes(deltaTime);
     }
 
     public void render() {
         repaint();
     }
 
-    public void testeColisoes() {
+    public void testeColisoes(double deltaTime) {
         if(bola.posX + bola.raio * 2 >= Principal.LARGURA_TELA || bola.posX <= 0) {
-            bola.posX -= bola.velX;
+            bola.posX -= (bola.velX * deltaTime);
         }
 
         if(bola.posY + bola.raio * 2 >= Principal.ALTURA_TELA || bola.posY <= 0) {
-            bola.posY -= bola.velY;
+            bola.posY -= (bola.velY * deltaTime);
         }
 
         // Colisão com inimigo
@@ -110,8 +133,8 @@ public class Game extends JPanel {
         var hipotenusa = Math.sqrt(Math.pow(catetoH, 2) + Math.pow(catetoV, 2));
 
         if(hipotenusa <= bola.raio + inimigo.raio) {
-            bola.posX -= bola.velX;
-            bola.posY -= bola.velY;
+            bola.posX -= (bola.velX * deltaTime);
+            bola.posY -= (bola.velY * deltaTime);
         }
     }
 }

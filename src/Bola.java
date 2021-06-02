@@ -14,11 +14,11 @@ public class Bola {
     public BufferedImage direita_cima;
     public BufferedImage esquerda_baixo;
     public BufferedImage esquerda_cima;
-    public int posX;
-    public int posY;
-    public int raio;
-    public int velX;
-    public int velY;
+    public double posX;
+    public double posY;
+    public double raio;
+    public double velX;
+    public double velY;
 
     public Bola() {
         try {
@@ -72,11 +72,11 @@ public class Bola {
         return image;
     }
 
-    public int getCentroX() {
+    public double getCentroX() {
         return posX + raio;
     }
 
-    public int getCentroY() {
+    public double getCentroY() {
         return posY + raio;
     }
 }
