@@ -25,7 +25,7 @@ public class Jogador {
 
     public Jogador() {
         try {
-            sprite = ImageIO.read(Objects.requireNonNull(getClass().getResource("imgs/sprite.png")));
+            sprite = ImageIO.read(Objects.requireNonNull(getClass().getResource("imgs/sprite_person_bola.png")));
             cima = Recursos.getInstance().cortarImagem(100, 0,200, 100, sprite);
             baixo = Recursos.getInstance().cortarImagem(0, 100,100, 200, sprite);
             esquerda = Recursos.getInstance().cortarImagem(200, 100,300, 200, sprite);

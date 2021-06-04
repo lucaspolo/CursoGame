@@ -9,6 +9,7 @@ import java.io.IOException;
 public class Game extends JPanel {
     private final Inimigo inimigo;
     private Jogador jogador;
+    private Bolinha bolinha;
     private boolean kCima = false;
     private boolean kBaixo = false;
     private boolean kDireita = false;
@@ -53,6 +54,7 @@ public class Game extends JPanel {
 
         jogador = new Jogador();
         inimigo = new Inimigo();
+        bolinha = new Bolinha();
 
         try {
             bg = ImageIO.read(getClass().getResource("imgs/bg.png"));
@@ -85,6 +87,7 @@ public class Game extends JPanel {
         g2d.fillRect(Principal.LIMITE_ESQUERDO, 0, 5, Principal.ALTURA_TELA);
         g2d.drawImage(jogador.obterImagem(), jogador.af, null);
         g2d.drawImage(inimigo.img, inimigo.af, null);
+        g2d.drawImage(bolinha.img, bolinha.af, null);
     }
 
     public void gameLoop() {
@@ -115,6 +118,7 @@ public class Game extends JPanel {
     public void update() {
         jogador.update(deltaTime);
         inimigo.update(deltaTime);
+        bolinha.update(deltaTime);
         testeColisoes(deltaTime);
     }
 
@@ -133,6 +137,59 @@ public class Game extends JPanel {
 
         if(jogador.posX <= Principal.LIMITE_DIREITO) {
             jogador.desmoverX(deltaTime);
+        }
+
+        if(bolinha.posX + (bolinha.raio * 2) >= Principal.LARGURA_TELA) {
+            bolinha.velX *= -1;
+            bolinha.posX = Principal.LARGURA_TELA - (bolinha.raio * 2);
+        }
+
+        if(bolinha.posX <= 0) {
+            bolinha.velX *= -1;
+            bolinha.posX = 0;
+        }
+
+        if(bolinha.posY + (bolinha.raio * 2) >= Principal.ALTURA_TELA) {
+            bolinha.velY *= -1;
+            bolinha.posY = Principal.ALTURA_TELA - (bolinha.raio * 2);
+        }
+
+        if(bolinha.posY <= 0) {
+            bolinha.velY *= -1;
+            bolinha.posY = 0;
+        }
+
+        var ladoHorizontal = jogador.getCentroX() - bolinha.getCentroX();
+        var ladoVertical = jogador.getCentroY() - bolinha.getCentroY();
+        var hipotenusa = Math.sqrt(Math.pow(ladoHorizontal, 2) + Math.pow(ladoVertical, 2));
+
+        if(hipotenusa <= jogador.raio + bolinha.raio) {
+            jogador.desmoverX(deltaTime);
+            jogador.desmoverY(deltaTime);
+
+            var cosseno = ladoHorizontal / hipotenusa;
+            var seno = ladoVertical / hipotenusa;
+            bolinha.velX = (-bolinha.velocidadeBase) * cosseno;
+            bolinha.velY = (-bolinha.velocidadeBase) * seno;
+        }
+
+        ladoHorizontal = inimigo.getCentroX() - bolinha.getCentroX();
+        ladoVertical = inimigo.getCentroY() - bolinha.getCentroY();
+        hipotenusa = Math.sqrt(Math.pow(ladoHorizontal, 2) + Math.pow(ladoVertical, 2));
+
+        if(hipotenusa <= inimigo.raio + bolinha.raio) {
+            inimigo.desmoverX(deltaTime);
+            inimigo.desmoverY(deltaTime);
+
+            var cosseno = ladoHorizontal / hipotenusa;
+            var seno = ladoVertical / hipotenusa;
+            bolinha.velX = (-bolinha.velocidadeBase) * cosseno;
+            bolinha.velY = (-bolinha.velocidadeBase) * seno;
+        }
+
+        if(inimigo.posY <= 0 || inimigo.posY + (inimigo.raio * 2) >= Principal.ALTURA_TELA) {
+            inimigo.desmoverY(deltaTime);
+            inimigo.velY *= -1;
         }
     }
 }
