@@ -1,9 +1,10 @@
 import javax.imageio.ImageIO;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
 
-public class Bola {
+public class Jogador {
     public BufferedImage sprite;
     public BufferedImage parada;
     public BufferedImage baixo;
@@ -14,13 +15,15 @@ public class Bola {
     public BufferedImage direita_cima;
     public BufferedImage esquerda_baixo;
     public BufferedImage esquerda_cima;
+    public AffineTransform af;
     public double posX;
     public double posY;
     public double raio;
     public double velX;
     public double velY;
+    public double velocidadeBase;
 
-    public Bola() {
+    public Jogador() {
         try {
             sprite = ImageIO.read(Objects.requireNonNull(getClass().getResource("imgs/sprite.png")));
             cima = Recursos.getInstance().cortarImagem(100, 0,200, 100, sprite);
@@ -35,9 +38,11 @@ public class Bola {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        posX = 100;
-        posY = 100;
+        af = new AffineTransform();
         raio = 50;
+        posX = (Principal.LARGURA_TELA * (7.0 / 8.0) - raio);
+        posY = (Principal.ALTURA_TELA / 2.0) - raio;
+        velocidadeBase = 3;
         velX = 0;
         velY = 0;
     }
@@ -78,5 +83,38 @@ public class Bola {
 
     public double getCentroY() {
         return posY + raio;
+    }
+
+    public void mover(double deltaTime) {
+        posX += (velX * deltaTime);
+        posY += (velY * deltaTime);
+        af.setToTranslation(posX, posY);
+    }
+
+    public void desmoverX(double deltaTime) {
+        posX -= (velX * deltaTime);
+        af.setToTranslation(posX, posY);
+    }
+
+    public void desmoverY(double deltaTime) {
+        posY -= (velY * deltaTime);
+        af.setToTranslation(posX, posY);
+    }
+
+    public void update(double deltaTime) {
+        mover(deltaTime);
+    }
+
+    public void handlerEvents(boolean kCima, boolean kBaixo, boolean kEsquerda, boolean kDireita) {
+        velX = 0;
+        velY = 0;
+
+        this.velX = 0;
+        this.velY = 0;
+
+        if(kCima) this.velY = -velocidadeBase;
+        if (kBaixo) this.velY = velocidadeBase;
+        if (kEsquerda) this.velX = -velocidadeBase;
+        if (kDireita) this.velX = velocidadeBase;
     }
 }

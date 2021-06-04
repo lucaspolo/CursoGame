@@ -1,22 +1,27 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 public class Game extends JPanel {
     private final Inimigo inimigo;
-    private Bola bola;
+    private Jogador jogador;
     private boolean kCima = false;
     private boolean kBaixo = false;
     private boolean kDireita = false;
     private boolean kEsquerda = false;
+    private boolean kShifit = false;
 
     private long tempoAtual;
     private long tempoAnterior;
     private double deltaTime;
 
     private double FPS_limit = 60;
+
+    private BufferedImage bg;
 
     public Game() {
         addKeyListener(new KeyListener() {
@@ -31,6 +36,7 @@ public class Game extends JPanel {
                     case KeyEvent.VK_DOWN -> kBaixo = value;
                     case KeyEvent.VK_LEFT -> kEsquerda = value;
                     case KeyEvent.VK_RIGHT -> kDireita = value;
+                    case KeyEvent.VK_SHIFT -> kShifit = value;
                 }
             }
 
@@ -45,8 +51,15 @@ public class Game extends JPanel {
             }
         });
 
-        bola = new Bola();
+        jogador = new Jogador();
         inimigo = new Inimigo();
+
+        try {
+            bg = ImageIO.read(getClass().getResource("imgs/bg.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         setFocusable(true);
         setLayout(null);
 
@@ -66,14 +79,12 @@ public class Game extends JPanel {
             RenderingHints.VALUE_INTERPOLATION_BICUBIC
         );
         super.paintComponent(g2d);
-        var af1 = new AffineTransform();
-        var af2 = new AffineTransform();
-        af1.translate(bola.posX, bola.posY);
-        af2.translate(inimigo.posX, inimigo.posY);
-        setBackground(Color.LIGHT_GRAY);
-        g2d.setColor(Color.RED);
-        g2d.drawImage(bola.obterImagem(), af1, null);
-        g2d.drawImage(inimigo.img, af2, null);
+        g2d.drawImage(bg, 0, 0, Principal.LARGURA_TELA, Principal.ALTURA_TELA, null);
+        g2d.setColor(Color.GRAY);
+        g2d.fillRect(Principal.LIMITE_DIREITO, 0, 5, Principal.ALTURA_TELA);
+        g2d.fillRect(Principal.LIMITE_ESQUERDO, 0, 5, Principal.ALTURA_TELA);
+        g2d.drawImage(jogador.obterImagem(), jogador.af, null);
+        g2d.drawImage(inimigo.img, inimigo.af, null);
     }
 
     public void gameLoop() {
@@ -98,18 +109,12 @@ public class Game extends JPanel {
     }
 
     public void handlerEvents() {
-        bola.velX = 0;
-        bola.velY = 0;
-
-        if(kCima) bola.velY = -3;
-        if (kBaixo) bola.velY = 3;
-        if (kEsquerda) bola.velX = -3;
-        if (kDireita) bola.velX = 3;
+        jogador.handlerEvents(kCima, kBaixo, kEsquerda, kDireita);
     }
 
     public void update() {
-        bola.posX += (bola.velX * deltaTime);
-        bola.posY += (bola.velY * deltaTime);
+        jogador.update(deltaTime);
+        inimigo.update(deltaTime);
         testeColisoes(deltaTime);
     }
 
@@ -118,23 +123,16 @@ public class Game extends JPanel {
     }
 
     public void testeColisoes(double deltaTime) {
-        if(bola.posX + bola.raio * 2 >= Principal.LARGURA_TELA || bola.posX <= 0) {
-            bola.posX -= (bola.velX * deltaTime);
+        if(jogador.posX + jogador.raio * 2 >= Principal.LARGURA_TELA || jogador.posX <= 0) {
+            jogador.desmoverX(deltaTime);
         }
 
-        if(bola.posY + bola.raio * 2 >= Principal.ALTURA_TELA || bola.posY <= 0) {
-            bola.posY -= (bola.velY * deltaTime);
+        if(jogador.posY + jogador.raio * 2 >= Principal.ALTURA_TELA || jogador.posY <= 0) {
+            jogador.desmoverY(deltaTime);
         }
 
-        // Colisão com inimigo
-        var catetoH = bola.getCentroX() - inimigo.getCentroX();
-        var catetoV = bola.getCentroY() - inimigo.getCentroY();
-
-        var hipotenusa = Math.sqrt(Math.pow(catetoH, 2) + Math.pow(catetoV, 2));
-
-        if(hipotenusa <= bola.raio + inimigo.raio) {
-            bola.posX -= (bola.velX * deltaTime);
-            bola.posY -= (bola.velY * deltaTime);
+        if(jogador.posX <= Principal.LIMITE_DIREITO) {
+            jogador.desmoverX(deltaTime);
         }
     }
 }
