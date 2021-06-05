@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Objects;
 
 public class Game extends JPanel {
     private final Inimigo inimigo;
@@ -15,6 +16,7 @@ public class Game extends JPanel {
     private boolean kDireita = false;
     private boolean kEsquerda = false;
     private boolean kShifit = false;
+    private char estado;
 
     private long tempoAtual;
     private long tempoAnterior;
@@ -43,12 +45,18 @@ public class Game extends JPanel {
 
             @Override
             public void keyPressed(KeyEvent keyEvent) {
-                this.changeKeys(keyEvent, true);
+                if(estado == 'E') {
+                    this.changeKeys(keyEvent, true);
+                } else if(estado == 'P') {
+
+                }
             }
 
             @Override
             public void keyReleased(KeyEvent keyEvent) {
-                this.changeKeys(keyEvent, false);
+                if(estado == 'E') {
+                    this.changeKeys(keyEvent, false);
+                }
             }
         });
 
@@ -56,8 +64,11 @@ public class Game extends JPanel {
         inimigo = new Inimigo();
         bolinha = new Bolinha();
 
+        estado = 'S';
+        agendarTransicao(3000, 'E');
+
         try {
-            bg = ImageIO.read(getClass().getResource("imgs/bg.png"));
+            bg = ImageIO.read(Objects.requireNonNull(getClass().getResource("imgs/bg.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -65,12 +76,7 @@ public class Game extends JPanel {
         setFocusable(true);
         setLayout(null);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                gameLoop();
-            }
-        }).start();
+        new Thread(this::gameLoop).start();
     }
 
     @Override
@@ -81,19 +87,35 @@ public class Game extends JPanel {
             RenderingHints.VALUE_INTERPOLATION_BICUBIC
         );
         super.paintComponent(g2d);
-        g2d.drawImage(bg, 0, 0, Principal.LARGURA_TELA, Principal.ALTURA_TELA, null);
-        g2d.setColor(Color.GRAY);
-        g2d.fillRect(Principal.LIMITE_DIREITO, 0, 5, Principal.ALTURA_TELA);
-        g2d.fillRect(Principal.LIMITE_ESQUERDO, 0, 5, Principal.ALTURA_TELA);
-        g2d.drawImage(jogador.obterImagem(), jogador.af, null);
-        g2d.drawImage(inimigo.img, inimigo.af, null);
-        g2d.drawImage(bolinha.img, bolinha.af, null);
+
+        if(estado == 'S') {
+            g2d.setColor(Color.WHITE);
+            g2d.fillRect(0, 0, Principal.LARGURA_TELA, Principal.ALTURA_TELA);
+        } else if(estado == 'R') {
+            g2d.setColor(Color.BLACK);
+            g2d.fillRect(0, 0, Principal.LARGURA_TELA, Principal.ALTURA_TELA);
+        } else {
+            g2d.drawImage(bg, 0, 0, Principal.LARGURA_TELA, Principal.ALTURA_TELA, null);
+            g2d.setColor(Color.GRAY);
+            g2d.fillRect(Principal.LIMITE_DIREITO, 0, 5, Principal.ALTURA_TELA);
+            g2d.fillRect(Principal.LIMITE_ESQUERDO, 0, 5, Principal.ALTURA_TELA);
+            g2d.drawImage(jogador.obterImagem(), jogador.af, null);
+            g2d.drawImage(inimigo.img, inimigo.af, null);
+            g2d.drawImage(bolinha.img, bolinha.af, null);
+
+            if(estado == 'E') {
+
+            } else {
+                g2d.setColor(new Color( 0, 0, 0, 128));
+                g2d.fillRect(0, 0, Principal.LARGURA_TELA, Principal.ALTURA_TELA);
+            }
+        }
     }
 
     public void gameLoop() {
         tempoAnterior = System.nanoTime();
         double tempoMinimo = (1e9) / FPS_limit;
-        while(true) {
+        do {
             tempoAtual = System.nanoTime();
             deltaTime = (tempoAtual - tempoAnterior) * (6e-8);
             handlerEvents();
@@ -108,18 +130,24 @@ public class Game extends JPanel {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        } while (true);
     }
 
     public void handlerEvents() {
-        jogador.handlerEvents(kCima, kBaixo, kEsquerda, kDireita);
+        if(estado == 'E') {
+            jogador.handlerEvents(kCima, kBaixo, kEsquerda, kDireita);
+        }
     }
 
     public void update() {
-        jogador.update(deltaTime);
-        inimigo.update(deltaTime);
-        bolinha.update(deltaTime);
-        testeColisoes(deltaTime);
+        if(estado == 'E') {
+            jogador.update(deltaTime);
+            inimigo.update(deltaTime);
+            bolinha.update(deltaTime);
+            testeColisoes(deltaTime);
+        } else if(estado == 'G') {
+            estado = 'R';
+        }
     }
 
     public void render() {
@@ -191,5 +219,20 @@ public class Game extends JPanel {
             inimigo.desmoverY(deltaTime);
             inimigo.velY *= -1;
         }
+    }
+
+    public void agendarTransicao(int tempo, char novoEstado) {
+        var thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(tempo);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                estado = novoEstado;
+            }
+        });
+        thread.start();
     }
 }
