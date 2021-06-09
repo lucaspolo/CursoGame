@@ -190,6 +190,7 @@ public class Game extends JPanel {
     public void handlerEvents() {
         if(estado == 'E') {
             jogador.handlerEvents(kCima, kBaixo, kEsquerda, kDireita);
+            inimigo.handlerEvents(bolinha);
         }
     }
 
@@ -277,24 +278,16 @@ public class Game extends JPanel {
             bolinha.velY = (-bolinha.velocidadeBase) * seno;
             Recursos.getInstance().tocarSomBolinha();
         }
-
-        if(inimigo.posY <= 0 || inimigo.posY + (inimigo.raio * 2) >= Principal.ALTURA_TELA) {
-            inimigo.desmoverY(deltaTime);
-            inimigo.velY *= -1;
-        }
     }
 
     public void agendarTransicao(int tempo, char novoEstado) {
-        var thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(tempo);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                estado = novoEstado;
+        var thread = new Thread(() -> {
+            try {
+                Thread.sleep(tempo);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            estado = novoEstado;
         });
         thread.start();
     }

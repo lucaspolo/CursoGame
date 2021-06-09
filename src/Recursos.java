@@ -2,6 +2,7 @@ import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Random;
 
 public class Recursos {
     private static Recursos singleton = null;
@@ -20,6 +21,8 @@ public class Recursos {
     public Clip clipSilence;
     public Clip clipSet;
 
+    private Random random;
+
     private Recursos() {
         pontosInimigo = 0;
         pontosJogador = 0;
@@ -30,6 +33,7 @@ public class Recursos {
         pauseOpt = 0;
 
         carregarSons();
+        random = new Random(System.currentTimeMillis());
     }
 
     public static Recursos getInstance() {
@@ -78,5 +82,9 @@ public class Recursos {
     public void tocarSomMenu() {
         clipMenu.setFramePosition(0);
         clipMenu.start();
+    }
+
+    public int gerarAleatorio(int min, int max) {
+        return random.nextInt((max + 1) - min) + min;
     }
 }
